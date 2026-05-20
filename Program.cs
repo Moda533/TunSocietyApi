@@ -144,15 +144,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 var app = builder.Build();
 
-using (var scope = app.Services.CreateScope())
-{
-    // Disabled automatic migrations for Render deployment
-
-    var rolePermissionService =
-        scope.ServiceProvider.GetRequiredService<RolePermissionService>();
-
-    await rolePermissionService.EnsureDefaultsAsync();
-}
+// Startup database seeding disabled for Render deployment
 
 app.UseCors("Frontend");
 
