@@ -11,7 +11,7 @@ actor Moderator
 actor Admin
 
 rectangle "TunSociety Moderation" {
-  usecase "Submit moderated content" as UC_Submit
+  usecase "Submit moderated content" as UC_Submitd
   usecase "Analyze content" as UC_Analyze
   usecase "Allow content" as UC_Allow
   usecase "Flag content for review" as UC_Flag

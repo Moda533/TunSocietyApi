@@ -22,6 +22,36 @@ namespace TunSociety.Api.Migrations
 
             MySqlModelBuilderExtensions.AutoIncrementColumns(modelBuilder);
 
+            modelBuilder.Entity("TunSociety.Api.Models.Album", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("CoverImageUrl")
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(160)
+                        .HasColumnType("varchar(160)");
+
+                    b.Property<DateTime?>("UpdatedAtUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("char(36)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId", "CreatedAtUtc");
+
+                    b.ToTable("Albums");
+                });
+
             modelBuilder.Entity("TunSociety.Api.Models.Appeal", b =>
                 {
                     b.Property<Guid>("Id")
@@ -66,10 +96,16 @@ namespace TunSociety.Api.Migrations
 
                     b.Property<string>("Action")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasMaxLength(128)
+                        .HasColumnType("varchar(128)");
 
                     b.Property<Guid?>("ActorUserId")
                         .HasColumnType("char(36)");
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("varchar(64)");
 
                     b.Property<DateTime>("CreatedAtUtc")
                         .HasColumnType("datetime(6)");
@@ -79,15 +115,93 @@ namespace TunSociety.Api.Migrations
 
                     b.Property<string>("EntityId")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasMaxLength(128)
+                        .HasColumnType("varchar(128)");
 
                     b.Property<string>("EntityType")
                         .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("varchar(64)");
+
+                    b.Property<string>("MetadataJson")
                         .HasColumnType("longtext");
+
+                    b.Property<Guid?>("SubjectUserId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("Summary")
+                        .HasMaxLength(512)
+                        .HasColumnType("varchar(512)");
+
+                    b.Property<string>("TargetDisplayName")
+                        .HasMaxLength(256)
+                        .HasColumnType("varchar(256)");
 
                     b.HasKey("Id");
 
-                    b.ToTable("AuditLogs");
+                    b.HasIndex("Action");
+
+                    b.HasIndex("CreatedAtUtc");
+
+                    b.HasIndex("ActorUserId", "CreatedAtUtc");
+
+                    b.HasIndex("Category", "CreatedAtUtc");
+
+                    b.HasIndex("EntityType", "EntityId");
+
+                    b.HasIndex("SubjectUserId", "CreatedAtUtc");
+
+                    b.ToTable("AuditLogs", (string)null);
+                });
+
+            modelBuilder.Entity("TunSociety.Api.Models.CommunityEvent", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid?>("ChatConversationId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<Guid>("CreatedByUserId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(4000)
+                        .HasColumnType("varchar(4000)");
+
+                    b.Property<string>("ImageUrl")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Location")
+                        .IsRequired()
+                        .HasMaxLength(240)
+                        .HasColumnType("varchar(240)");
+
+                    b.Property<DateTime>("StartsAtUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(180)
+                        .HasColumnType("varchar(180)");
+
+                    b.Property<DateTime?>("UpdatedAtUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ChatConversationId");
+
+                    b.HasIndex("CreatedByUserId");
+
+                    b.HasIndex("StartsAtUtc");
+
+                    b.ToTable("Events", (string)null);
                 });
 
             modelBuilder.Entity("TunSociety.Api.Models.CommunityNotification", b =>
@@ -104,11 +218,26 @@ namespace TunSociety.Api.Migrations
                         .HasMaxLength(800)
                         .HasColumnType("varchar(800)");
 
+                    b.Property<string>("ImageUrl")
+                        .HasColumnType("longtext");
+
                     b.Property<bool>("IsRead")
                         .HasColumnType("tinyint(1)");
 
                     b.Property<DateTime?>("ReadAtUtc")
                         .HasColumnType("datetime(6)");
+
+                    b.Property<Guid?>("RelatedCommentId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid?>("RelatedGroupConversationId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid?>("RelatedPostId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid?>("RelatedReplyId")
+                        .HasColumnType("char(36)");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -124,6 +253,14 @@ namespace TunSociety.Api.Migrations
                         .HasColumnType("char(36)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("RelatedCommentId");
+
+                    b.HasIndex("RelatedGroupConversationId");
+
+                    b.HasIndex("RelatedPostId");
+
+                    b.HasIndex("RelatedReplyId");
 
                     b.HasIndex("UserId", "CreatedAtUtc");
 
@@ -173,11 +310,11 @@ namespace TunSociety.Api.Migrations
                     b.Property<Guid>("PartnerUserId")
                         .HasColumnType("char(36)");
 
-                    b.Property<Guid?>("LastVisibleMessageId")
-                        .HasColumnType("char(36)");
-
                     b.Property<DateTime?>("LastVisibleMessageAtUtc")
                         .HasColumnType("datetime(6)");
+
+                    b.Property<Guid?>("LastVisibleMessageId")
+                        .HasColumnType("char(36)");
 
                     b.Property<DateTime>("UpdatedAtUtc")
                         .HasColumnType("datetime(6)");
@@ -187,6 +324,107 @@ namespace TunSociety.Api.Migrations
                     b.HasIndex("PartnerUserId");
 
                     b.ToTable("DirectMessageReadCursors");
+                });
+
+            modelBuilder.Entity("TunSociety.Api.Models.EventComment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasMaxLength(1200)
+                        .HasColumnType("varchar(1200)");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<Guid>("EventId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("char(36)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("EventId", "CreatedAtUtc");
+
+                    b.ToTable("EventComments");
+                });
+
+            modelBuilder.Entity("TunSociety.Api.Models.EventEvaluation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<Guid>("EventId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("Feedback")
+                        .HasMaxLength(1200)
+                        .HasColumnType("varchar(1200)");
+
+                    b.Property<int>("Rating")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAtUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("char(36)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedAtUtc");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("EventId", "UserId")
+                        .IsUnique();
+
+                    b.ToTable("EventEvaluations");
+                });
+
+            modelBuilder.Entity("TunSociety.Api.Models.EventParticipant", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<Guid>("EventId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("varchar(32)");
+
+                    b.Property<DateTime?>("UpdatedAtUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("char(36)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("EventId", "Status");
+
+                    b.HasIndex("EventId", "UserId")
+                        .IsUnique();
+
+                    b.ToTable("EventParticipants");
                 });
 
             modelBuilder.Entity("TunSociety.Api.Models.Freeze", b =>
@@ -257,6 +495,190 @@ namespace TunSociety.Api.Migrations
                     b.ToTable("FriendRequests");
                 });
 
+            modelBuilder.Entity("TunSociety.Api.Models.Group", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("CoverImageUrl")
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<int>("MemberCount")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(160)
+                        .HasColumnType("varchar(160)");
+
+                    b.Property<Guid>("OwnerUserId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("Visibility")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("varchar(32)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OwnerUserId", "Visibility");
+
+                    b.ToTable("Groups");
+                });
+
+            modelBuilder.Entity("TunSociety.Api.Models.GroupConversation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("AvatarUrl")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("CreateRoomPermission")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("varchar(32)");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<Guid>("CreatedByUserId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<DateTime?>("DeletedAtUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Introduction")
+                        .HasMaxLength(1000)
+                        .HasColumnType("varchar(1000)");
+
+                    b.Property<string>("InviteCode")
+                        .IsRequired()
+                        .HasMaxLength(48)
+                        .HasColumnType("varchar(48)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(160)
+                        .HasColumnType("varchar(160)");
+
+                    b.Property<string>("Notice")
+                        .HasMaxLength(1000)
+                        .HasColumnType("varchar(1000)");
+
+                    b.Property<Guid?>("SourceEventId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<DateTime?>("UpdatedAtUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedByUserId");
+
+                    b.HasIndex("InviteCode")
+                        .IsUnique();
+
+                    b.HasIndex("SourceEventId");
+
+                    b.ToTable("GroupConversations");
+                });
+
+            modelBuilder.Entity("TunSociety.Api.Models.GroupConversationMember", b =>
+                {
+                    b.Property<Guid>("GroupConversationId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<DateTime?>("ClearedAtUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime?>("InvitedAtUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<Guid?>("InvitedByUserId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<bool>("IsArchived")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<bool>("IsMuted")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<bool>("IsPinned")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<DateTime>("JoinedAtUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime?>("LastReadAtUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<Guid?>("LastReadMessageId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<DateTime?>("LeftAtUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("varchar(32)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("varchar(32)");
+
+                    b.HasKey("GroupConversationId", "UserId");
+
+                    b.HasIndex("InvitedByUserId");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("GroupConversationId", "Status");
+
+                    b.HasIndex("UserId", "IsArchived");
+
+                    b.ToTable("GroupConversationMembers");
+                });
+
+            modelBuilder.Entity("TunSociety.Api.Models.GroupMessage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("varchar(2000)");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<Guid>("GroupConversationId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid>("SenderUserId")
+                        .HasColumnType("char(36)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SenderUserId");
+
+                    b.HasIndex("GroupConversationId", "CreatedAtUtc");
+
+                    b.ToTable("GroupMessages");
+                });
+
             modelBuilder.Entity("TunSociety.Api.Models.Message", b =>
                 {
                     b.Property<Guid>("Id")
@@ -316,10 +738,20 @@ namespace TunSociety.Api.Migrations
                     b.Property<DateTime>("CreatedAtUtc")
                         .HasColumnType("datetime(6)");
 
+                    b.Property<DateTime?>("EscalatedAtUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("EscalationNote")
+                        .HasMaxLength(1000)
+                        .HasColumnType("varchar(1000)");
+
                     b.Property<string>("FlagsData")
                         .IsRequired()
                         .HasMaxLength(512)
                         .HasColumnType("varchar(512)");
+
+                    b.Property<bool>("IsEscalated")
+                        .HasColumnType("tinyint(1)");
 
                     b.Property<string>("Reason")
                         .HasColumnType("longtext");
@@ -337,7 +769,58 @@ namespace TunSociety.Api.Migrations
 
                     b.HasIndex("UserId", "CreatedAtUtc");
 
+                    b.HasIndex("IsEscalated", "EscalatedAtUtc", "CreatedAtUtc");
+
                     b.ToTable("ModerationResults");
+                });
+
+            modelBuilder.Entity("TunSociety.Api.Models.Photo", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid?>("AlbumId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("varchar(128)");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("MediaType")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("varchar(16)");
+
+                    b.Property<string>("MediaUrl")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("OriginalFileName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<long>("SizeBytes")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime?>("UpdatedAtUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("char(36)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AlbumId");
+
+                    b.HasIndex("UserId", "CreatedAtUtc");
+
+                    b.ToTable("Photos");
                 });
 
             modelBuilder.Entity("TunSociety.Api.Models.Post", b =>
@@ -396,6 +879,14 @@ namespace TunSociety.Api.Migrations
                     b.Property<DateTime>("CreatedAtUtc")
                         .HasColumnType("datetime(6)");
 
+                    b.Property<string>("MentionedUserIdsJson")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("varchar(1000)");
+
+                    b.Property<Guid?>("ParentCommentId")
+                        .HasColumnType("char(36)");
+
                     b.Property<Guid>("PostId")
                         .HasColumnType("char(36)");
 
@@ -405,6 +896,8 @@ namespace TunSociety.Api.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("CreatedAtUtc");
+
+                    b.HasIndex("ParentCommentId");
 
                     b.HasIndex("PostId");
 
@@ -451,6 +944,13 @@ namespace TunSociety.Api.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("char(36)");
 
+                    b.Property<int?>("Age")
+                        .HasColumnType("int");
+
+                    b.Property<string>("AvatarUrl")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
                     b.Property<DateTime>("CreatedAtUtc")
                         .HasColumnType("datetime(6)");
 
@@ -458,19 +958,6 @@ namespace TunSociety.Api.Migrations
                         .IsRequired()
                         .HasMaxLength(128)
                         .HasColumnType("varchar(128)");
-
-                    b.Property<string>("Gender")
-                        .IsRequired()
-                        .HasMaxLength(16)
-                        .HasColumnType("varchar(16)")
-                        .HasDefaultValue("Male");
-
-                    b.Property<int?>("Age")
-                        .HasColumnType("int");
-
-                    b.Property<string>("AvatarUrl")
-                        .IsRequired()
-                        .HasColumnType("longtext");
 
                     b.Property<string>("Email")
                         .IsRequired()
@@ -481,6 +968,13 @@ namespace TunSociety.Api.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasDefaultValue(0);
+
+                    b.Property<string>("Gender")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(16)
+                        .HasColumnType("varchar(16)")
+                        .HasDefaultValue("Male");
 
                     b.Property<bool>("IsFrozen")
                         .HasColumnType("tinyint(1)");
@@ -537,6 +1031,17 @@ namespace TunSociety.Api.Migrations
                     b.ToTable("Warnings");
                 });
 
+            modelBuilder.Entity("TunSociety.Api.Models.Album", b =>
+                {
+                    b.HasOne("TunSociety.Api.Models.User", "User")
+                        .WithMany("Albums")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("TunSociety.Api.Models.Appeal", b =>
                 {
                     b.HasOne("TunSociety.Api.Models.User", "User")
@@ -546,6 +1051,17 @@ namespace TunSociety.Api.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("TunSociety.Api.Models.CommunityEvent", b =>
+                {
+                    b.HasOne("TunSociety.Api.Models.User", "CreatedByUser")
+                        .WithMany()
+                        .HasForeignKey("CreatedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("CreatedByUser");
                 });
 
             modelBuilder.Entity("TunSociety.Api.Models.CommunityNotification", b =>
@@ -597,6 +1113,63 @@ namespace TunSociety.Api.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("TunSociety.Api.Models.EventComment", b =>
+                {
+                    b.HasOne("TunSociety.Api.Models.CommunityEvent", "Event")
+                        .WithMany("Comments")
+                        .HasForeignKey("EventId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("TunSociety.Api.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Event");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("TunSociety.Api.Models.EventEvaluation", b =>
+                {
+                    b.HasOne("TunSociety.Api.Models.CommunityEvent", "Event")
+                        .WithMany("Evaluations")
+                        .HasForeignKey("EventId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("TunSociety.Api.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Event");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("TunSociety.Api.Models.EventParticipant", b =>
+                {
+                    b.HasOne("TunSociety.Api.Models.CommunityEvent", "Event")
+                        .WithMany("Participants")
+                        .HasForeignKey("EventId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("TunSociety.Api.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Event");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("TunSociety.Api.Models.Freeze", b =>
                 {
                     b.HasOne("TunSociety.Api.Models.User", "User")
@@ -627,6 +1200,73 @@ namespace TunSociety.Api.Migrations
                     b.Navigation("RequesterUser");
                 });
 
+            modelBuilder.Entity("TunSociety.Api.Models.Group", b =>
+                {
+                    b.HasOne("TunSociety.Api.Models.User", "OwnerUser")
+                        .WithMany("OwnedGroups")
+                        .HasForeignKey("OwnerUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("OwnerUser");
+                });
+
+            modelBuilder.Entity("TunSociety.Api.Models.GroupConversation", b =>
+                {
+                    b.HasOne("TunSociety.Api.Models.User", "CreatedByUser")
+                        .WithMany()
+                        .HasForeignKey("CreatedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("CreatedByUser");
+                });
+
+            modelBuilder.Entity("TunSociety.Api.Models.GroupConversationMember", b =>
+                {
+                    b.HasOne("TunSociety.Api.Models.GroupConversation", "GroupConversation")
+                        .WithMany("Members")
+                        .HasForeignKey("GroupConversationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("TunSociety.Api.Models.User", "InvitedByUser")
+                        .WithMany()
+                        .HasForeignKey("InvitedByUserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("TunSociety.Api.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("GroupConversation");
+
+                    b.Navigation("InvitedByUser");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("TunSociety.Api.Models.GroupMessage", b =>
+                {
+                    b.HasOne("TunSociety.Api.Models.GroupConversation", "GroupConversation")
+                        .WithMany("Messages")
+                        .HasForeignKey("GroupConversationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("TunSociety.Api.Models.User", "SenderUser")
+                        .WithMany()
+                        .HasForeignKey("SenderUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("GroupConversation");
+
+                    b.Navigation("SenderUser");
+                });
+
             modelBuilder.Entity("TunSociety.Api.Models.Message", b =>
                 {
                     b.HasOne("TunSociety.Api.Models.User", "User")
@@ -649,6 +1289,24 @@ namespace TunSociety.Api.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("TunSociety.Api.Models.Photo", b =>
+                {
+                    b.HasOne("TunSociety.Api.Models.Album", "Album")
+                        .WithMany("Photos")
+                        .HasForeignKey("AlbumId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("TunSociety.Api.Models.User", "User")
+                        .WithMany("Photos")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Album");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("TunSociety.Api.Models.Post", b =>
                 {
                     b.HasOne("TunSociety.Api.Models.User", "User")
@@ -662,6 +1320,11 @@ namespace TunSociety.Api.Migrations
 
             modelBuilder.Entity("TunSociety.Api.Models.PostComment", b =>
                 {
+                    b.HasOne("TunSociety.Api.Models.PostComment", "ParentComment")
+                        .WithMany("Replies")
+                        .HasForeignKey("ParentCommentId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
                     b.HasOne("TunSociety.Api.Models.Post", "Post")
                         .WithMany("Comments")
                         .HasForeignKey("PostId")
@@ -673,6 +1336,8 @@ namespace TunSociety.Api.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.Navigation("ParentComment");
 
                     b.Navigation("Post");
 
@@ -709,6 +1374,27 @@ namespace TunSociety.Api.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("TunSociety.Api.Models.Album", b =>
+                {
+                    b.Navigation("Photos");
+                });
+
+            modelBuilder.Entity("TunSociety.Api.Models.CommunityEvent", b =>
+                {
+                    b.Navigation("Comments");
+
+                    b.Navigation("Evaluations");
+
+                    b.Navigation("Participants");
+                });
+
+            modelBuilder.Entity("TunSociety.Api.Models.GroupConversation", b =>
+                {
+                    b.Navigation("Members");
+
+                    b.Navigation("Messages");
+                });
+
             modelBuilder.Entity("TunSociety.Api.Models.Post", b =>
                 {
                     b.Navigation("Comments");
@@ -716,11 +1402,22 @@ namespace TunSociety.Api.Migrations
                     b.Navigation("Reactions");
                 });
 
+            modelBuilder.Entity("TunSociety.Api.Models.PostComment", b =>
+                {
+                    b.Navigation("Replies");
+                });
+
             modelBuilder.Entity("TunSociety.Api.Models.User", b =>
                 {
+                    b.Navigation("Albums");
+
                     b.Navigation("Messages");
 
                     b.Navigation("Notifications");
+
+                    b.Navigation("OwnedGroups");
+
+                    b.Navigation("Photos");
 
                     b.Navigation("PostComments");
 

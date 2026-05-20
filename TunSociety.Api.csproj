@@ -19,4 +19,11 @@
     <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="8.0.2" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Remove="bin\**;obj\**;build-check\**;publish\**;deploy-publish\**" />
+    <EmbeddedResource Remove="bin\**;obj\**;build-check\**;publish\**;deploy-publish\**" />
+    <None Remove="bin\**;obj\**;build-check\**;publish\**;deploy-publish\**" />
+    <Content Remove="bin\**;obj\**;build-check\**;publish\**;deploy-publish\**" />
+  </ItemGroup>
+
 </Project>

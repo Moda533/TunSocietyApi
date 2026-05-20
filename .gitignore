@@ -1,0 +1,9 @@
+bin/
+obj/
+build-check/
+App_Data/avatars/
+*.log
+*.err
+*.out
+*.manual.dll
+*.manual.pdb

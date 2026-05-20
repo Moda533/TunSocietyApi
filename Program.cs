@@ -1,8 +1,12 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using TunSociety.Api.Configuration;
+using TunSociety.Api.Data;
 using TunSociety.Api.Infrastructure;
+using TunSociety.Api.Infrastructure.Security;
 using TunSociety.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -57,6 +61,15 @@ builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("AdminOnly", policy => policy.RequireRole(RoleNames.Admin));
     options.AddPolicy("ModeratorOrAdmin", policy => policy.RequireRole(RoleNames.Moderator, RoleNames.Admin));
+
+    foreach (var permission in PermissionNames.All)
+    {
+        options.AddPolicy(permission, policy =>
+        {
+            policy.RequireAuthenticatedUser();
+            policy.AddRequirements(new PermissionRequirement(permission));
+        });
+    }
 });
 
 builder.Services.AddHttpClient<LocalAiService>((serviceProvider, client) =>
@@ -70,9 +83,31 @@ builder.Services.AddScoped<ModerationService>();
 builder.Services.AddScoped<SanctionService>();
 builder.Services.AddScoped<AuditService>();
 builder.Services.AddScoped<JwtTokenService>();
+builder.Services.AddScoped<RolePermissionService>();
+builder.Services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
 builder.Services.AddSingleton<AvatarStorageService>();
+builder.Services.AddSingleton<EventImageStorageService>();
+builder.Services.AddSingleton<ProfileMediaStorageService>();
+
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+if (string.IsNullOrWhiteSpace(connectionString))
+{
+    throw new InvalidOperationException("DefaultConnection is missing. Set it in appsettings.json or environment.");
+}
+
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseMySql(connectionString, new MySqlServerVersion(new Version(8, 0, 34))));
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    dbContext.Database.Migrate();
+
+    var rolePermissionService = scope.ServiceProvider.GetRequiredService<RolePermissionService>();
+    await rolePermissionService.EnsureDefaultsAsync();
+}
 
 app.UseHttpsRedirection();
 app.UseCors("Frontend");
