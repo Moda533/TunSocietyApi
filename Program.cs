@@ -39,22 +39,22 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("Frontend", policy =>
     {
-        var origins = builder.Configuration
+        var configuredOrigins = builder.Configuration
             .GetSection("Cors:Origins")
-            .Get<string[]>();
+            .Get<string[]>()
+            ?? [];
 
-        if (origins is { Length: > 0 })
+        var allowedOrigins = new HashSet<string>(
+            configuredOrigins,
+            StringComparer.OrdinalIgnoreCase)
         {
-            policy.WithOrigins(origins)
-                  .AllowAnyHeader()
-                  .AllowAnyMethod();
-        }
-        else
-        {
-            policy.AllowAnyOrigin()
-                  .AllowAnyHeader()
-                  .AllowAnyMethod();
-        }
+            "https://tunsociety-appp.pages.dev"
+        };
+
+        policy.SetIsOriginAllowed(origin =>
+              IsAllowedFrontendOrigin(origin, allowedOrigins))
+              .AllowAnyHeader()
+              .AllowAnyMethod();
     });
 });
 
@@ -158,3 +158,32 @@ app.Urls.Add(
     Environment.GetEnvironmentVariable("PORT"));
 
 app.Run();
+
+static bool IsAllowedFrontendOrigin(
+    string origin,
+    HashSet<string> allowedOrigins)
+{
+    if (string.IsNullOrWhiteSpace(origin))
+    {
+        return false;
+    }
+
+    if (allowedOrigins.Contains(origin))
+    {
+        return true;
+    }
+
+    if (!Uri.TryCreate(origin, UriKind.Absolute, out var uri) ||
+        !string.Equals(uri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase))
+    {
+        return false;
+    }
+
+    return string.Equals(
+               uri.Host,
+               "tunsociety-appp.pages.dev",
+               StringComparison.OrdinalIgnoreCase) ||
+           uri.Host.EndsWith(
+               ".tunsociety-appp.pages.dev",
+               StringComparison.OrdinalIgnoreCase);
+}
