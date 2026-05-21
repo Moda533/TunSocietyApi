@@ -140,7 +140,7 @@ if (string.IsNullOrWhiteSpace(connectionString))
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseMySql(
         connectionString,
-        new MySqlServerVersion(new Version(8, 0, 34))));
+        ServerVersion.AutoDetect(connectionString)));
 
 var app = builder.Build();
 
@@ -151,7 +151,7 @@ using (var scope = app.Services.CreateScope())
 
     dbContext.Database.Migrate();
 
-    // Keep seeding disabled for Render deployment
+    // Keep seeding disabled on Render
     // var rolePermissionService =
     //     scope.ServiceProvider.GetRequiredService<RolePermissionService>();
     // await rolePermissionService.EnsureDefaultsAsync();
