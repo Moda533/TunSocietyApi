@@ -1,4 +1,7 @@
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using System.Text;
+using System.Text.Json;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
@@ -132,9 +135,11 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 var app = builder.Build();
 
-// Database migration disabled on Render startup
+Console.WriteLine("### DEMO LOGIN PATCH ACTIVE ###");
 
-Console.WriteLine("### CORS PATCH ACTIVE 4786ff9 ###");
+app.Urls.Add(
+    "http://0.0.0.0:" +
+    Environment.GetEnvironmentVariable("PORT"));
 
 app.Use(async (context, next) =>
 {
@@ -153,13 +158,116 @@ app.Use(async (context, next) =>
 
 app.UseCors("Frontend");
 
+// TEMPORARY DEMO LOGIN BYPASS
+app.Use(async (context, next) =>
+{
+    if (context.Request.Path.Equals("/api/auth/login", StringComparison.OrdinalIgnoreCase) &&
+        context.Request.Method.Equals("POST", StringComparison.OrdinalIgnoreCase))
+    {
+        context.Request.EnableBuffering();
+
+        using var reader = new StreamReader(
+            context.Request.Body,
+            Encoding.UTF8,
+            leaveOpen: true);
+
+        var body = await reader.ReadToEndAsync();
+        context.Request.Body.Position = 0;
+
+        try
+        {
+            var login = JsonSerializer.Deserialize<LoginRequest>(
+                body,
+                new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+
+            if (login?.Email == "demo@tunsociety.com" &&
+                login.Password == "Demo123!")
+            {
+                var claims = new[]
+                {
+                    new Claim(JwtRegisteredClaimNames.Sub, "demo-user-id"),
+                    new Claim(JwtRegisteredClaimNames.Email, "demo@tunsociety.com"),
+                    new Claim(ClaimTypes.NameIdentifier, "demo-user-id"),
+                    new Claim(ClaimTypes.Email, "demo@tunsociety.com"),
+                    new Claim(ClaimTypes.Name, "Demo User"),
+                    new Claim(ClaimTypes.Role, RoleNames.Admin)
+                };
+
+                var key = new SymmetricSecurityKey(
+                    Encoding.UTF8.GetBytes(jwtOptions.SigningKey));
+
+                var credentials = new SigningCredentials(
+                    key,
+                    SecurityAlgorithms.HmacSha256);
+
+                var token = new JwtSecurityToken(
+                    issuer: jwtOptions.Issuer,
+                    audience: jwtOptions.Audience,
+                    claims: claims,
+                    expires: DateTime.UtcNow.AddDays(7),
+                    signingCredentials: credentials);
+
+                var tokenString = new JwtSecurityTokenHandler()
+                    .WriteToken(token);
+
+                context.Response.ContentType = "application/json";
+                context.Response.StatusCode = 200;
+
+                await context.Response.WriteAsJsonAsync(new
+                {
+                    token = tokenString,
+                    accessToken = tokenString,
+                    user = new
+                    {
+                        id = "demo-user-id",
+                        email = "demo@tunsociety.com",
+                        username = "Demo User",
+                        role = RoleNames.Admin
+                    }
+                });
+
+                return;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("DEMO LOGIN BYPASS ERROR:");
+            Console.WriteLine(ex.ToString());
+        }
+    }
+
+    await next();
+});
+
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.MapGet("/debug/db", async (ApplicationDbContext db) =>
+{
+    try
+    {
+        var canConnect = await db.Database.CanConnectAsync();
+        return Results.Ok(new
+        {
+            database = "connected",
+            canConnect
+        });
+    }
+    catch (Exception ex)
+    {
+        return Results.Problem(ex.ToString());
+    }
+});
+
 app.MapControllers();
 
-app.Urls.Add(
-    "http://0.0.0.0:" +
-    Environment.GetEnvironmentVariable("PORT"));
-
 app.Run();
+
+public sealed class LoginRequest
+{
+    public string? Email { get; set; }
+    public string? Password { get; set; }
+}
