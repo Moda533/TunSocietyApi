@@ -39,20 +39,11 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("Frontend", policy =>
     {
-        var configuredOrigins = builder.Configuration
-            .GetSection("Cors:Origins")
-            .Get<string[]>()
-            ?? [];
-
-        var allowedOrigins = new HashSet<string>(
-            configuredOrigins,
-            StringComparer.OrdinalIgnoreCase)
-        {
-            "https://tunsociety-appp.pages.dev"
-        };
-
-        policy.SetIsOriginAllowed(origin =>
-              IsAllowedFrontendOrigin(origin, allowedOrigins))
+        policy
+            .WithOrigins(
+                "https://tunsociety-appp.pages.dev",
+                "https://979ccc99.tunsociety-appp.pages.dev"
+            )
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
@@ -158,32 +149,3 @@ app.Urls.Add(
     Environment.GetEnvironmentVariable("PORT"));
 
 app.Run();
-
-static bool IsAllowedFrontendOrigin(
-    string origin,
-    HashSet<string> allowedOrigins)
-{
-    if (string.IsNullOrWhiteSpace(origin))
-    {
-        return false;
-    }
-
-    if (allowedOrigins.Contains(origin))
-    {
-        return true;
-    }
-
-    if (!Uri.TryCreate(origin, UriKind.Absolute, out var uri) ||
-        !string.Equals(uri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase))
-    {
-        return false;
-    }
-
-    return string.Equals(
-               uri.Host,
-               "tunsociety-appp.pages.dev",
-               StringComparison.OrdinalIgnoreCase) ||
-           uri.Host.EndsWith(
-               ".tunsociety-appp.pages.dev",
-               StringComparison.OrdinalIgnoreCase);
-}
