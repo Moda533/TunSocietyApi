@@ -140,7 +140,7 @@ if (string.IsNullOrWhiteSpace(connectionString))
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseMySql(
         connectionString,
-        ServerVersion.AutoDetect(connectionString)));
+        new MySqlServerVersion(new Version(8, 0, 36))));
 
 var app = builder.Build();
 
@@ -150,11 +150,6 @@ using (var scope = app.Services.CreateScope())
         scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
     dbContext.Database.Migrate();
-
-    // Keep seeding disabled on Render
-    // var rolePermissionService =
-    //     scope.ServiceProvider.GetRequiredService<RolePermissionService>();
-    // await rolePermissionService.EnsureDefaultsAsync();
 }
 
 app.UseCors("Frontend");
@@ -163,5 +158,9 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.Urls.Add(
+    "http://0.0.0.0:" +
+    Environment.GetEnvironmentVariable("PORT"));
 
 app.Run();
