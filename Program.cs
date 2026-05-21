@@ -40,12 +40,9 @@ builder.Services.AddCors(options =>
     options.AddPolicy("Frontend", policy =>
     {
         policy
-            .WithOrigins(
-                "https://tunsociety-appp.pages.dev",
-                "https://979ccc99.tunsociety-appp.pages.dev"
-            )
-              .AllowAnyHeader()
-              .AllowAnyMethod();
+            .AllowAnyOrigin()
+            .AllowAnyHeader()
+            .AllowAnyMethod();
     });
 });
 
