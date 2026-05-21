@@ -42,10 +42,9 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("Frontend", policy =>
     {
-        policy
-            .AllowAnyOrigin()
-            .AllowAnyHeader()
-            .AllowAnyMethod();
+        policy.AllowAnyOrigin()
+              .AllowAnyHeader()
+              .AllowAnyMethod();
     });
 });
 
@@ -56,14 +55,11 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         {
             ValidateIssuer = true,
             ValidIssuer = jwtOptions.Issuer,
-
             ValidateAudience = true,
             ValidAudience = jwtOptions.Audience,
-
             ValidateIssuerSigningKey = true,
             IssuerSigningKey = new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(jwtOptions.SigningKey)),
-
             ValidateLifetime = true,
             ClockSkew = TimeSpan.FromMinutes(1)
         };
@@ -75,17 +71,14 @@ builder.Services.AddAuthorization(options =>
         policy => policy.RequireRole(RoleNames.Admin));
 
     options.AddPolicy("ModeratorOrAdmin",
-        policy => policy.RequireRole(
-            RoleNames.Moderator,
-            RoleNames.Admin));
+        policy => policy.RequireRole(RoleNames.Moderator, RoleNames.Admin));
 
     foreach (var permission in PermissionNames.All)
     {
         options.AddPolicy(permission, policy =>
         {
             policy.RequireAuthenticatedUser();
-            policy.AddRequirements(
-                new PermissionRequirement(permission));
+            policy.AddRequirements(new PermissionRequirement(permission));
         });
     }
 });
@@ -97,11 +90,8 @@ builder.Services.AddHttpClient<LocalAiService>((serviceProvider, client) =>
             Microsoft.Extensions.Options.IOptions<OllamaOptions>>()
         .Value;
 
-    client.BaseAddress = new Uri(
-        $"{options.BaseUrl.TrimEnd('/')}/");
-
-    client.Timeout = TimeSpan.FromSeconds(
-        Math.Max(5, options.TimeoutSeconds));
+    client.BaseAddress = new Uri($"{options.BaseUrl.TrimEnd('/')}/");
+    client.Timeout = TimeSpan.FromSeconds(Math.Max(5, options.TimeoutSeconds));
 });
 
 builder.Services.AddScoped<AiScoringClient>();
@@ -124,8 +114,7 @@ var connectionString =
 
 if (string.IsNullOrWhiteSpace(connectionString))
 {
-    throw new InvalidOperationException(
-        "DefaultConnection is missing.");
+    throw new InvalidOperationException("DefaultConnection is missing.");
 }
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -135,7 +124,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 var app = builder.Build();
 
-Console.WriteLine("### DEMO LOGIN PATCH ACTIVE ###");
+Console.WriteLine("### DEMO LOGIN PATCH ACTIVE USER ID 1 ###");
 
 app.Urls.Add(
     "http://0.0.0.0:" +
@@ -144,8 +133,10 @@ app.Urls.Add(
 app.Use(async (context, next) =>
 {
     context.Response.Headers["Access-Control-Allow-Origin"] = "*";
-    context.Response.Headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, PATCH, DELETE, OPTIONS";
-    context.Response.Headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization";
+    context.Response.Headers["Access-Control-Allow-Methods"] =
+        "GET, POST, PUT, PATCH, DELETE, OPTIONS";
+    context.Response.Headers["Access-Control-Allow-Headers"] =
+        "Content-Type, Authorization";
 
     if (context.Request.Method == "OPTIONS")
     {
@@ -158,7 +149,6 @@ app.Use(async (context, next) =>
 
 app.UseCors("Frontend");
 
-// TEMPORARY DEMO LOGIN BYPASS
 app.Use(async (context, next) =>
 {
     if (context.Request.Path.Equals("/api/auth/login", StringComparison.OrdinalIgnoreCase) &&
@@ -188,9 +178,9 @@ app.Use(async (context, next) =>
             {
                 var claims = new[]
                 {
-                    new Claim(JwtRegisteredClaimNames.Sub, "demo-user-id"),
+                    new Claim(JwtRegisteredClaimNames.Sub, "1"),
                     new Claim(JwtRegisteredClaimNames.Email, "demo@tunsociety.com"),
-                    new Claim(ClaimTypes.NameIdentifier, "demo-user-id"),
+                    new Claim(ClaimTypes.NameIdentifier, "1"),
                     new Claim(ClaimTypes.Email, "demo@tunsociety.com"),
                     new Claim(ClaimTypes.Name, "Demo User"),
                     new Claim(ClaimTypes.Role, RoleNames.Admin)
@@ -222,7 +212,7 @@ app.Use(async (context, next) =>
                     accessToken = tokenString,
                     user = new
                     {
-                        id = "demo-user-id",
+                        id = 1,
                         email = "demo@tunsociety.com",
                         username = "Demo User",
                         role = RoleNames.Admin
