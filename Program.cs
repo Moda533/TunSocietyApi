@@ -134,6 +134,8 @@ var app = builder.Build();
 
 // Database migration disabled on Render startup
 
+Console.WriteLine("### CORS PATCH ACTIVE 4786ff9 ###");
+
 app.Use(async (context, next) =>
 {
     context.Response.Headers["Access-Control-Allow-Origin"] = "*";
